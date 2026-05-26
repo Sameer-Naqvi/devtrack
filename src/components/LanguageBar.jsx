@@ -1,24 +1,21 @@
-﻿const COLORS = [
-  "bg-blue-500", "bg-green-500", "bg-yellow-500",
-  "bg-purple-500", "bg-red-500", "bg-pink-500",
-];
+﻿const COLORS = ["#3fb950", "#79c0ff", "#d29922", "#f78166", "#a5d6ff", "#ffa657"];
 
 export default function LanguageBar({ languages }) {
   const total = languages.reduce((sum, l) => sum + l.count, 0);
-
   return (
-    <div className="space-y-3">
+    <div>
       {languages.map((lang, i) => (
-        <div key={lang.language}>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-300">{lang.language}</span>
-            <span className="text-gray-500">{lang.count} repos</span>
+        <div key={lang.language} style={{ marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4 }}>
+            <span style={{ color: "#8b949e" }}>{lang.language}</span>
+            <span style={{ color: "#484f58" }}>{Math.round((lang.count / total) * 100)}%</span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-2">
-            <div
-              className={`${COLORS[i % COLORS.length]} h-2 rounded-full`}
-              style={{ width: `${(lang.count / total) * 100}%` }}
-            />
+          <div style={{ height: 6, background: "#21262d", borderRadius: 2 }}>
+            <div style={{
+              height: 6, borderRadius: 2,
+              background: COLORS[i % COLORS.length],
+              width: `${(lang.count / total) * 100}%`
+            }} />
           </div>
         </div>
       ))}

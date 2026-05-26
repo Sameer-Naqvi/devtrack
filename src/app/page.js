@@ -7,41 +7,59 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("profile");
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800 px-8 py-5 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">DevTrack</h1>
-          <p className="text-gray-400 text-sm">GitHub Intelligence Dashboard</p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "profile"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-            }`}
-          >
-            Profile Analyzer
-          </button>
-          <button
-            onClick={() => setActiveTab("review")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "review"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-            }`}
-          >
-            PR Reviewer
-          </button>
-        </div>
-      </header>
+    <div style={{ minHeight: "100vh", background: "#0d1117", padding: "24px" }}>
+      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
 
-      {/* Content */}
-      <main className="max-w-6xl mx-auto px-8 py-10">
-        {activeTab === "profile" ? <ProfileAnalyzer /> : <PRReviewer />}
-      </main>
+        {/* Titlebar */}
+        <div style={{
+          background: "#161b22",
+          border: "1px solid #30363d",
+          borderRadius: "14px 14px 0 0",
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px"
+        }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ff5f57" }} />
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#febc2e" }} />
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#28c840" }} />
+          <span style={{ color: "#484f58", fontSize: 11, marginLeft: 8 }}>devtrack — github intelligence dashboard</span>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+            <button
+              onClick={() => setActiveTab("profile")}
+              style={{
+                fontSize: 10, padding: "3px 10px",
+                border: `1px solid ${activeTab === "profile" ? "#3fb950" : "#30363d"}`,
+                color: activeTab === "profile" ? "#3fb950" : "#484f58",
+                background: "transparent", borderRadius: 4, cursor: "pointer",
+                fontFamily: "Courier New, monospace"
+              }}
+            >profile</button>
+            <button
+              onClick={() => setActiveTab("review")}
+              style={{
+                fontSize: 10, padding: "3px 10px",
+                border: `1px solid ${activeTab === "review" ? "#3fb950" : "#30363d"}`,
+                color: activeTab === "review" ? "#3fb950" : "#484f58",
+                background: "transparent", borderRadius: 4, cursor: "pointer",
+                fontFamily: "Courier New, monospace"
+              }}
+            >pr review</button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{
+          background: "#0d1117",
+          border: "1px solid #30363d",
+          borderTop: "none",
+          borderRadius: "0 0 14px 14px",
+          padding: "24px"
+        }}>
+          {activeTab === "profile" ? <ProfileAnalyzer /> : <PRReviewer />}
+        </div>
+
+      </div>
     </div>
   );
 }

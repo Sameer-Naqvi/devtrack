@@ -1,9 +1,13 @@
-﻿export default function StatCard({ label, value, sub }) {
+﻿export default function StatCard({ label, value, color }) {
+  const colors = { green: "#3fb950", blue: "#79c0ff", yellow: "#d29922", default: "#e6edf3" };
+  const c = colors[color] || colors.default;
   return (
-    <div className="bg-gray-800 rounded-xl p-5 flex flex-col gap-1">
-      <p className="text-gray-400 text-xs uppercase tracking-wider">{label}</p>
-      <p className="text-3xl font-bold text-white">{value}</p>
-      {sub && <p className="text-gray-500 text-xs">{sub}</p>}
+    <div style={{
+      background: "#0d1117", border: "1px solid #21262d",
+      borderRadius: 6, padding: "10px 12px"
+    }}>
+      <div style={{ fontSize: 20, fontWeight: "bold", color: c, fontFamily: "Courier New, monospace" }}>{value}</div>
+      <div style={{ fontSize: 10, color: "#484f58", marginTop: 2 }}>{label}</div>
     </div>
   );
 }

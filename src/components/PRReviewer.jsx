@@ -1,18 +1,28 @@
 ﻿"use client";
 import { useState } from "react";
 
-const Section = ({ title, items, color }) => {
+const SectionTitle = ({ children }) => (
+  <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, paddingBottom: 4, borderBottom: "1px solid #21262d" }}>
+    // {children}
+  </div>
+);
+
+const Panel = ({ children, style }) => (
+  <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 8, padding: 14, ...style }}>
+    {children}
+  </div>
+);
+
+const ReviewSection = ({ title, items, borderColor, textColor }) => {
   if (!items || items.length === 0) return null;
   return (
-    <div>
-      <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">{title}</p>
-      <ul className="space-y-2">
-        {items.map((item, i) => (
-          <li key={i} className={`text-sm px-4 py-2 rounded-lg border-l-4 ${color}`}>
-            {item}
-          </li>
-        ))}
-      </ul>
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 10, color: "#484f58", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{title}</div>
+      {items.map((item, i) => (
+        <div key={i} style={{ fontSize: 11, color: textColor, borderLeft: `2px solid ${borderColor}`, paddingLeft: 10, marginBottom: 6, lineHeight: 1.6 }}>
+          {item}
+        </div>
+      ))}
     </div>
   );
 };
@@ -28,11 +38,10 @@ export default function PRReviewer() {
     setLoading(true);
     setError(null);
     setResult(null);
-
     try {
       const res = await fetch(`/api/review?url=${encodeURIComponent(prUrl)}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Review failed");
+      if (!res.ok) throw new Error(data.error || "review failed");
       setResult(data);
     } catch (err) {
       setError(err.message);
@@ -42,73 +51,106 @@ export default function PRReviewer() {
   };
 
   const verdictColor = {
-    "Approve": "bg-green-800 text-green-200",
-    "Request Changes": "bg-red-800 text-red-200",
-    "Needs Discussion": "bg-yellow-800 text-yellow-200",
+    "Approve": "#3fb950",
+    "Request Changes": "#f78166",
+    "Needs Discussion": "#d29922",
   };
 
+  const scoreColor = (s) => s >= 8 ? "#3fb950" : s >= 5 ? "#d29922" : "#f78166";
+
   return (
-    <div className="space-y-8">
-      {/* Input */}
-      <div className="flex gap-3">
-        <input
-          type="text"
-          value={prUrl}
-          onChange={(e) => setPrUrl(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && review()}
-          placeholder="https://github.com/owner/repo/pull/123"
-          className="flex-1 bg-gray-800 text-white rounded-xl px-5 py-3 text-sm border border-gray-700 focus:outline-none focus:border-blue-500"
-        />
-        <button
-          onClick={review}
-          disabled={loading || !prUrl.trim()}
-          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
-        >
-          {loading ? "Reviewing..." : "Review PR"}
-        </button>
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: 12, color: "#484f58", marginBottom: 8 }}>
+          $ <span style={{ color: "#3fb950" }}>devtrack review</span>{" "}
+          <span style={{ color: "#79c0ff" }}>{prUrl || "_"}</span>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            value={prUrl}
+            onChange={(e) => setPrUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && review()}
+            placeholder="https://github.com/owner/repo/pull/123"
+            style={{
+              flex: 1, background: "#161b22", border: "1px solid #30363d",
+              borderRadius: 6, padding: "8px 12px", fontSize: 12,
+              color: "#e6edf3", fontFamily: "Courier New, monospace", outline: "none"
+            }}
+          />
+          <button
+            onClick={review}
+            disabled={loading || !prUrl.trim()}
+            style={{
+              background: "#0d1117", border: "1px solid #3fb950",
+              borderRadius: 6, color: "#3fb950", fontSize: 12,
+              padding: "8px 16px", cursor: "pointer",
+              fontFamily: "Courier New, monospace",
+              opacity: !prUrl.trim() ? 0.4 : 1
+            }}
+          >
+            {loading ? "reviewing..." : "$ run"}
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-700 text-red-300 rounded-xl px-5 py-4 text-sm">
-          {error}
+        <div style={{ background: "#1a0000", border: "1px solid #f78166", borderRadius: 6, padding: "10px 14px", fontSize: 12, color: "#f78166", marginBottom: 16 }}>
+          error: {error}
         </div>
       )}
 
       {result && (
-        <>
+        <div>
           {/* PR Header */}
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-white font-bold text-lg">{result.prDetails.title}</h2>
-                <p className="text-gray-400 text-sm mt-1">
-                  {result.prDetails.changed_files} files changed ·{" "}
-                  <span className="text-green-400">+{result.prDetails.additions}</span>{" "}
-                  <span className="text-red-400">-{result.prDetails.deletions}</span>
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${verdictColor[result.review.verdict] || "bg-gray-700 text-gray-300"}`}>
-                  {result.review.verdict}
-                </span>
-                <p className="text-gray-400 text-xs mt-2">Score: {result.review.score}/10</p>
+          <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #21262d" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+              <div style={{ fontSize: 14, fontWeight: "bold", color: "#e6edf3", flex: 1, marginRight: 16 }}>{result.prDetails.title}</div>
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: "bold", color: verdictColor[result.review.verdict] || "#e6edf3" }}>
+                  [{result.review.verdict}]
+                </div>
+                <div style={{ fontSize: 18, fontWeight: "bold", color: scoreColor(result.review.score), marginTop: 2 }}>
+                  {result.review.score}/10
+                </div>
               </div>
             </div>
-            <p className="text-gray-300 text-sm mt-4 leading-relaxed">{result.review.summary}</p>
+            <div style={{ fontSize: 11, color: "#484f58" }}>
+              <span style={{ color: "#8b949e" }}>{result.prDetails.changed_files} files</span>
+              {" · "}
+              <span style={{ color: "#3fb950" }}>+{result.prDetails.additions}</span>
+              {" "}
+              <span style={{ color: "#f78166" }}>-{result.prDetails.deletions}</span>
+            </div>
           </div>
 
-          {/* Review Sections */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-gray-800 rounded-xl p-6 space-y-5">
-              <Section title="Potential Bugs" items={result.review.bugs} color="border-red-500 bg-red-950 text-red-200" />
-              <Section title="Security Concerns" items={result.review.security} color="border-orange-500 bg-orange-950 text-orange-200" />
-              <Section title="Style Issues" items={result.review.style} color="border-yellow-500 bg-yellow-950 text-yellow-200" />
+          <SectionTitle>summary</SectionTitle>
+          <Panel style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 12, color: "#8b949e", lineHeight: 1.8 }}>{result.review.summary}</div>
+          </Panel>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <SectionTitle>issues found</SectionTitle>
+              <Panel>
+                <ReviewSection title="potential bugs" items={result.review.bugs} borderColor="#f78166" textColor="#f78166" />
+                <ReviewSection title="security" items={result.review.security} borderColor="#d29922" textColor="#d29922" />
+                <ReviewSection title="style" items={result.review.style} borderColor="#484f58" textColor="#8b949e" />
+              </Panel>
             </div>
-            <div className="bg-gray-800 rounded-xl p-6 space-y-5">
-              <Section title="Positives" items={result.review.positives} color="border-green-500 bg-green-950 text-green-200" />
+            <div>
+              <SectionTitle>positives</SectionTitle>
+              <Panel>
+                <ReviewSection title="looks good" items={result.review.positives} borderColor="#3fb950" textColor="#3fb950" />
+              </Panel>
             </div>
           </div>
-        </>
+
+          <div style={{ fontSize: 11, color: "#3fb950", marginTop: 16 }}>
+            review complete · powered by groq llama-3.3
+            <span style={{ display: "inline-block", width: 7, height: 12, background: "#3fb950", verticalAlign: "middle", marginLeft: 4, animation: "blink 1s step-end infinite" }} />
+          </div>
+          <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
+        </div>
       )}
     </div>
   );
