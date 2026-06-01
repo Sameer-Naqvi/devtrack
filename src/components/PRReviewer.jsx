@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const SectionTitle = ({ children }) => (
   <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, paddingBottom: 4, borderBottom: "1px solid #21262d" }}>
@@ -27,19 +27,20 @@ const ReviewSection = ({ title, items, borderColor, textColor }) => {
   );
 };
 
-export default function PRReviewer() {
-  const [prUrl, setPrUrl] = useState("");
+export default function PRReviewer({ initialUrl = "" }) {
+  const [prUrl, setPrUrl] = useState(initialUrl);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const review = async () => {
-    if (!prUrl.trim()) return;
+  const review = async (url) => {
+    const target = url || prUrl;
+    if (!target.trim()) return;
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const res = await fetch(`/api/review?url=${encodeURIComponent(prUrl)}`);
+      const res = await fetch(`/api/review?url=${encodeURIComponent(target)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "review failed");
       setResult(data);
@@ -49,6 +50,14 @@ export default function PRReviewer() {
       setLoading(false);
     }
   };
+
+  // Auto-run when initialUrl is provided
+  useEffect(() => {
+    if (initialUrl) {
+      setPrUrl(initialUrl);
+      review(initialUrl);
+    }
+  }, [initialUrl]);
 
   const verdictColor = {
     "Approve": "#3fb950",
@@ -78,7 +87,7 @@ export default function PRReviewer() {
             }}
           />
           <button
-            onClick={review}
+            onClick={() => review()}
             disabled={loading || !prUrl.trim()}
             style={{
               background: "#0d1117", border: "1px solid #3fb950",
@@ -93,6 +102,12 @@ export default function PRReviewer() {
         </div>
       </div>
 
+      {loading && (
+        <div style={{ fontSize: 12, color: "#484f58" }}>
+          reviewing pr<span style={{ animation: "blink 1s step-end infinite" }}>...</span>
+        </div>
+      )}
+
       {error && (
         <div style={{ background: "#1a0000", border: "1px solid #f78166", borderRadius: 6, padding: "10px 14px", fontSize: 12, color: "#f78166", marginBottom: 16 }}>
           error: {error}
@@ -101,7 +116,6 @@ export default function PRReviewer() {
 
       {result && (
         <div>
-          {/* PR Header */}
           <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #21262d" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
               <div style={{ fontSize: 14, fontWeight: "bold", color: "#e6edf3", flex: 1, marginRight: 16 }}>{result.prDetails.title}</div>

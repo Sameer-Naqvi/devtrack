@@ -2,6 +2,7 @@
 import { useState } from "react";
 import StatCard from "./StatCard";
 import LanguageBar from "./LanguageBar";
+import RepoDrawer from "./RepoDrawer";
 
 const SectionTitle = ({ children }) => (
   <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, paddingBottom: 4, borderBottom: "1px solid #21262d" }}>
@@ -15,12 +16,13 @@ const Panel = ({ children, style }) => (
   </div>
 );
 
-export default function ProfileAnalyzer() {
+export default function ProfileAnalyzer({ onPRClick }) {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedRepo, setSelectedRepo] = useState(null);
 
   const analyze = async () => {
     if (!username.trim()) return;
@@ -28,6 +30,7 @@ export default function ProfileAnalyzer() {
     setError(null);
     setData(null);
     setProfile(null);
+    setSelectedRepo(null);
     try {
       const [githubRes, groqRes] = await Promise.all([
         fetch(`/api/github?username=${username}`),
@@ -47,9 +50,12 @@ export default function ProfileAnalyzer() {
 
   const tagColors = ["#3fb950", "#3fb950", "#79c0ff", "#79c0ff", "#d29922"];
 
+  const handleRepoClick = (repo) => {
+    setSelectedRepo(selectedRepo?.name === repo.name ? null : repo);
+  };
+
   return (
     <div>
-      {/* Prompt input */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 12, color: "#484f58", marginBottom: 8 }}>
           $ <span style={{ color: "#3fb950" }}>devtrack analyze</span>{" "}
@@ -64,19 +70,18 @@ export default function ProfileAnalyzer() {
             style={{
               flex: 1, background: "#161b22", border: "1px solid #30363d",
               borderRadius: 6, padding: "8px 12px", fontSize: 12,
-              color: "#e6edf3", fontFamily: "Courier New, monospace",
-              outline: "none"
+              color: "#e6edf3", fontFamily: "Courier New, monospace", outline: "none"
             }}
           />
           <button
             onClick={analyze}
             disabled={loading || !username.trim()}
             style={{
-              background: loading ? "#161b22" : "#0d1117",
-              border: "1px solid #3fb950", borderRadius: 6,
-              color: "#3fb950", fontSize: 12, padding: "8px 16px",
-              cursor: "pointer", fontFamily: "Courier New, monospace",
-              opacity: (!username.trim()) ? 0.4 : 1
+              background: "#0d1117", border: "1px solid #3fb950",
+              borderRadius: 6, color: "#3fb950", fontSize: 12,
+              padding: "8px 16px", cursor: "pointer",
+              fontFamily: "Courier New, monospace",
+              opacity: !username.trim() ? 0.4 : 1
             }}
           >
             {loading ? "analyzing..." : "$ run"}
@@ -92,7 +97,6 @@ export default function ProfileAnalyzer() {
 
       {data && profile && (
         <div>
-          {/* User header */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 20, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid #21262d" }}>
             <img
               src={data.user.avatar_url}
@@ -111,9 +115,7 @@ export default function ProfileAnalyzer() {
             </div>
           </div>
 
-          {/* Two column layout */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-            {/* Left col */}
             <div>
               <SectionTitle>stats</SectionTitle>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
@@ -122,33 +124,53 @@ export default function ProfileAnalyzer() {
                 <StatCard label="forks" value={data.stats.totalForks.toLocaleString()} color="yellow" />
                 <StatCard label="active 30d" value={data.stats.recentlyActive} color="green" />
               </div>
-
               <SectionTitle>languages</SectionTitle>
               <Panel>
                 <LanguageBar languages={data.languages} />
               </Panel>
             </div>
 
-            {/* Right col */}
             <div>
-              <SectionTitle>top repos</SectionTitle>
-              <Panel style={{ marginBottom: 16 }}>
+              <SectionTitle>top repos — click to analyze</SectionTitle>
+              <Panel>
                 {data.repos.slice(0, 5).map((repo) => (
-                  <div key={repo.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "8px 0", borderBottom: "1px solid #21262d" }}>
-                    <div>
-                      <div style={{ fontSize: 12, color: "#79c0ff" }}>{repo.name}</div>
-                      <div style={{ fontSize: 10, color: "#484f58", marginTop: 2, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {repo.description || "no description"}
+                  <div key={repo.id}>
+                    <div
+                      onClick={() => handleRepoClick(repo)}
+                      style={{
+                        display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+                        padding: "8px 0", borderBottom: "1px solid #21262d", cursor: "pointer"
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
+                      onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                    >
+                      <div>
+                        <div style={{ fontSize: 12, color: selectedRepo?.name === repo.name ? "#3fb950" : "#79c0ff", display: "flex", alignItems: "center", gap: 6 }}>
+                          {selectedRepo?.name === repo.name ? "▼" : "▶"} {repo.name}
+                        </div>
+                        <div style={{ fontSize: 10, color: "#484f58", marginTop: 2, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {repo.description || "no description"}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 11, color: "#d29922", whiteSpace: "nowrap" }}>
+                        {repo.stargazers_count.toLocaleString()}
                       </div>
                     </div>
-                    <div style={{ fontSize: 11, color: "#d29922", whiteSpace: "nowrap" }}>★ {repo.stargazers_count.toLocaleString()}</div>
+
+                    {selectedRepo?.name === repo.name && (
+                      <RepoDrawer
+                        repo={repo}
+                        owner={data.user.login}
+                        onClose={() => setSelectedRepo(null)}
+                        onPRClick={onPRClick}
+                      />
+                    )}
                   </div>
                 ))}
               </Panel>
             </div>
           </div>
 
-          {/* AI Profile */}
           <SectionTitle>ai profile</SectionTitle>
           <Panel>
             <div style={{ fontSize: 12, color: "#8b949e", lineHeight: 1.8, marginBottom: 12 }}>{profile.summary}</div>
@@ -156,7 +178,7 @@ export default function ProfileAnalyzer() {
               {profile.strengths?.map((s, i) => (
                 <span key={s} style={{ fontSize: 10, padding: "2px 8px", border: `1px solid ${tagColors[i % tagColors.length]}`, color: tagColors[i % tagColors.length], borderRadius: 3 }}>{s}</span>
               ))}
-              {profile.techStack?.map((t, i) => (
+              {profile.techStack?.map((t) => (
                 <span key={t} style={{ fontSize: 10, padding: "2px 8px", border: "1px solid #30363d", color: "#484f58", borderRadius: 3 }}>{t}</span>
               ))}
             </div>
@@ -169,7 +191,6 @@ export default function ProfileAnalyzer() {
             analysis complete · powered by groq llama-3.3
             <span style={{ display: "inline-block", width: 7, height: 12, background: "#3fb950", verticalAlign: "middle", marginLeft: 4, animation: "blink 1s step-end infinite" }} />
           </div>
-
           <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
         </div>
       )}

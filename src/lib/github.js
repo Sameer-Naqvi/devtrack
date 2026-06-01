@@ -20,15 +20,6 @@ export async function getRepos(username) {
   return res.json();
 }
 
-export async function getCommitActivity(username, repo) {
-  const res = await fetch(
-    `https://api.github.com/repos/${username}/${repo}/stats/commit_activity`,
-    { headers }
-  );
-  if (!res.ok) return [];
-  return res.json();
-}
-
 export async function getPRDiff(owner, repo, prNumber) {
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
@@ -45,6 +36,22 @@ export async function getPRDetails(owner, repo, prNumber) {
   );
   if (!res.ok) throw new Error("Could not fetch PR details");
   return res.json();
+}
+
+export async function getRepoDetails(owner, repo) {
+  const [repoRes, commitsRes, prsRes, contributorsRes] = await Promise.all([
+    fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers }),
+    fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=5`, { headers }),
+    fetch(`https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=5`, { headers }),
+    fetch(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=5`, { headers }),
+  ]);
+
+  const repoData = repoRes.ok ? await repoRes.json() : null;
+  const commits = commitsRes.ok ? await commitsRes.json() : [];
+  const prs = prsRes.ok ? await prsRes.json() : [];
+  const contributors = contributorsRes.ok ? await contributorsRes.json() : [];
+
+  return { repoData, commits, prs, contributors };
 }
 
 export function extractLanguages(repos) {
@@ -69,6 +76,5 @@ export function extractStats(repos) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     return updated > thirtyDaysAgo;
   }).length;
-
   return { totalStars, totalForks, recentlyActive, totalRepos: repos.length };
 }
