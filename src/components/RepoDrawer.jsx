@@ -9,7 +9,7 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
   const [error, setError] = useState(null);
 
   const actualOwner = repo.full_name ? repo.full_name.split("/")[0] : owner;
-  console.log("full_name:", repo.full_name, "actualOwner:", actualOwner);
+
   useEffect(() => {
     setLoading(true);
     setData(null);
@@ -22,12 +22,14 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
   }, [repo.name, actualOwner]);
 
   return (
-    <div style={{
-      marginTop: 12, background: "#0d1117",
-      border: "1px solid #3fb950", borderRadius: 8, overflow: "hidden"
-    }}>
+    <div style={{ marginTop: 12, background: "#0d1117", border: "1px solid #3fb950", borderRadius: 8, overflow: "hidden" }}>
       <div style={{ background: "#161b22", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #21262d" }}>
-        <span style={{ fontSize: 12, color: "#3fb950" }}>// {repo.full_name || repo.name}</span>
+        <span style={{ fontSize: 12, color: "#3fb950", display: "flex", alignItems: "center", gap: 12 }}>
+          <span>// {repo.full_name || repo.name}</span>
+          <a href={repo.html_url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#79c0ff", textDecoration: "underline" }}>
+            view on github
+          </a>
+        </span>
         <button onClick={onClose} style={{ background: "none", border: "none", color: "#484f58", cursor: "pointer", fontSize: 14, fontFamily: "Courier New, monospace" }}>x</button>
       </div>
 
@@ -49,7 +51,6 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
                 </span>
               </div>
               <div style={{ fontSize: 10, color: "#484f58", marginTop: 4, lineHeight: 1.6 }}>{data.analysis.healthReason}</div>
-
               <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                 {[
                   { label: "stars", val: data.repoData.stargazers_count.toLocaleString(), color: "#d29922" },
@@ -89,16 +90,14 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
                 <div
                   key={pr.id}
                   onClick={() => onPRClick(pr.html_url)}
-                  style={{ marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid #21262d", cursor: "pointer" }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                  style={{ marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid #21262d", cursor: "pointer", opacity: 1 }}
                 >
                   <div style={{ fontSize: 11, color: "#e6edf3", lineHeight: 1.5 }}>
                     #{pr.number} {pr.title.slice(0, 45)}{pr.title.length > 45 ? "..." : ""}
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
                     <span style={{ fontSize: 10, color: "#484f58" }}>by {pr.user.login}</span>
-                    <span style={{ fontSize: 10, color: "#3fb950" }}>→ analyze</span>
+                    <span style={{ fontSize: 10, color: "#3fb950" }}>[analyze]</span>
                   </div>
                 </div>
               ))}
