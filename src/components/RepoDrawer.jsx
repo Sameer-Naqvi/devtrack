@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const healthColor = { "Good": "#3fb950", "Fair": "#d29922", "Needs Attention": "#f78166" };
 
@@ -7,6 +8,7 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const isMobile = useIsMobile();
 
   const actualOwner = repo.full_name ? repo.full_name.split("/")[0] : owner;
 
@@ -23,8 +25,8 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
 
   return (
     <div style={{ marginTop: 12, background: "#0d1117", border: "1px solid #3fb950", borderRadius: 8, overflow: "hidden" }}>
-      <div style={{ background: "#161b22", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #21262d" }}>
-        <span style={{ fontSize: 12, color: "#3fb950", display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ background: "#161b22", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #21262d", flexWrap: "wrap", gap: 8 }}>
+        <span style={{ fontSize: 12, color: "#3fb950", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <span>// {repo.full_name || repo.name}</span>
           <a href={repo.html_url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#79c0ff", textDecoration: "underline" }}>
             view on github
@@ -38,7 +40,7 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
         {error && <div style={{ fontSize: 12, color: "#f78166" }}>error: {error}</div>}
 
         {data && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 14 }}>
 
             <div>
               <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>// what it does</div>
@@ -90,7 +92,7 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
                 <div
                   key={pr.id}
                   onClick={() => onPRClick(pr.html_url)}
-                  style={{ marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid #21262d", cursor: "pointer", opacity: 1 }}
+                  style={{ marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid #21262d", cursor: "pointer" }}
                 >
                   <div style={{ fontSize: 11, color: "#e6edf3", lineHeight: 1.5 }}>
                     #{pr.number} {pr.title.slice(0, 45)}{pr.title.length > 45 ? "..." : ""}

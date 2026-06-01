@@ -3,6 +3,7 @@ import { useState } from "react";
 import StatCard from "./StatCard";
 import LanguageBar from "./LanguageBar";
 import RepoDrawer from "./RepoDrawer";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const SectionTitle = ({ children }) => (
   <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, paddingBottom: 4, borderBottom: "1px solid #21262d" }}>
@@ -23,6 +24,7 @@ export default function ProfileAnalyzer({ onPRClick }) {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
   const [selectedRepo, setSelectedRepo] = useState(null);
+  const isMobile = useIsMobile();
 
   const analyze = async () => {
     if (!username.trim()) return;
@@ -97,13 +99,14 @@ export default function ProfileAnalyzer({ onPRClick }) {
 
       {data && profile && (
         <div>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 20, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid #21262d" }}>
+          {/* User header */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid #21262d", flexWrap: "wrap" }}>
             <img
               src={data.user.avatar_url}
               alt={data.user.login}
               style={{ width: 56, height: 56, borderRadius: "50%", border: "2px solid #3fb950", filter: "grayscale(30%)" }}
             />
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 16, fontWeight: "bold", color: "#e6edf3" }}>{data.user.name || data.user.login}</div>
               <div style={{ fontSize: 11, color: "#484f58", marginBottom: 8 }}>@{data.user.login} · {data.user.location || "unknown location"}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
@@ -115,15 +118,17 @@ export default function ProfileAnalyzer({ onPRClick }) {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          {/* Stats grid - 2 col on mobile, 4 on desktop */}
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
+            <StatCard label="repositories" value={data.stats.totalRepos} />
+            <StatCard label="total stars" value={data.stats.totalStars.toLocaleString()} color="blue" />
+            <StatCard label="forks" value={data.stats.totalForks.toLocaleString()} color="yellow" />
+            <StatCard label="active 30d" value={data.stats.recentlyActive} color="green" />
+          </div>
+
+          {/* Main two col — stacks on mobile */}
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 16 }}>
             <div>
-              <SectionTitle>stats</SectionTitle>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
-                <StatCard label="repositories" value={data.stats.totalRepos} />
-                <StatCard label="total stars" value={data.stats.totalStars.toLocaleString()} color="blue" />
-                <StatCard label="forks" value={data.stats.totalForks.toLocaleString()} color="yellow" />
-                <StatCard label="active 30d" value={data.stats.recentlyActive} color="green" />
-              </div>
               <SectionTitle>languages</SectionTitle>
               <Panel>
                 <LanguageBar languages={data.languages} />
@@ -141,18 +146,16 @@ export default function ProfileAnalyzer({ onPRClick }) {
                         display: "flex", justifyContent: "space-between", alignItems: "flex-start",
                         padding: "8px 0", borderBottom: "1px solid #21262d", cursor: "pointer"
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
-                      onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
                     >
-                      <div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ fontSize: 12, color: selectedRepo?.name === repo.name ? "#3fb950" : "#79c0ff", display: "flex", alignItems: "center", gap: 6 }}>
-                          {selectedRepo?.name === repo.name ? "▼" : "▶"} {repo.name}
+                          {selectedRepo?.name === repo.name ? "v" : ">"} {repo.name}
                         </div>
-                        <div style={{ fontSize: 10, color: "#484f58", marginTop: 2, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ fontSize: 10, color: "#484f58", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {repo.description || "no description"}
                         </div>
                       </div>
-                      <div style={{ fontSize: 11, color: "#d29922", whiteSpace: "nowrap" }}>
+                      <div style={{ fontSize: 11, color: "#d29922", whiteSpace: "nowrap", marginLeft: 8 }}>
                         {repo.stargazers_count.toLocaleString()}
                       </div>
                     </div>
@@ -171,6 +174,7 @@ export default function ProfileAnalyzer({ onPRClick }) {
             </div>
           </div>
 
+          {/* AI Profile */}
           <SectionTitle>ai profile</SectionTitle>
           <Panel>
             <div style={{ fontSize: 12, color: "#8b949e", lineHeight: 1.8, marginBottom: 12 }}>{profile.summary}</div>

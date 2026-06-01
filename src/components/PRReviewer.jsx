@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useState, useEffect } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const SectionTitle = ({ children }) => (
   <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, paddingBottom: 4, borderBottom: "1px solid #21262d" }}>
@@ -32,6 +33,7 @@ export default function PRReviewer({ initialUrl = "" }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const isMobile = useIsMobile();
 
   const review = async (url) => {
     const target = url || prUrl;
@@ -51,7 +53,6 @@ export default function PRReviewer({ initialUrl = "" }) {
     }
   };
 
-  // Auto-run when initialUrl is provided
   useEffect(() => {
     if (initialUrl) {
       setPrUrl(initialUrl);
@@ -72,18 +73,19 @@ export default function PRReviewer({ initialUrl = "" }) {
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 12, color: "#484f58", marginBottom: 8 }}>
           $ <span style={{ color: "#3fb950" }}>devtrack review</span>{" "}
-          <span style={{ color: "#79c0ff" }}>{prUrl || "_"}</span>
+          <span style={{ color: "#79c0ff", wordBreak: "break-all" }}>{prUrl || "_"}</span>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: isMobile ? "wrap" : "nowrap" }}>
           <input
             value={prUrl}
             onChange={(e) => setPrUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && review()}
             placeholder="https://github.com/owner/repo/pull/123"
             style={{
-              flex: 1, background: "#161b22", border: "1px solid #30363d",
+              flex: 1, minWidth: 0, background: "#161b22", border: "1px solid #30363d",
               borderRadius: 6, padding: "8px 12px", fontSize: 12,
-              color: "#e6edf3", fontFamily: "Courier New, monospace", outline: "none"
+              color: "#e6edf3", fontFamily: "Courier New, monospace", outline: "none",
+              width: isMobile ? "100%" : "auto"
             }}
           />
           <button
@@ -94,7 +96,8 @@ export default function PRReviewer({ initialUrl = "" }) {
               borderRadius: 6, color: "#3fb950", fontSize: 12,
               padding: "8px 16px", cursor: "pointer",
               fontFamily: "Courier New, monospace",
-              opacity: !prUrl.trim() ? 0.4 : 1
+              opacity: !prUrl.trim() ? 0.4 : 1,
+              width: isMobile ? "100%" : "auto"
             }}
           >
             {loading ? "reviewing..." : "$ run"}
@@ -103,9 +106,7 @@ export default function PRReviewer({ initialUrl = "" }) {
       </div>
 
       {loading && (
-        <div style={{ fontSize: 12, color: "#484f58" }}>
-          reviewing pr<span style={{ animation: "blink 1s step-end infinite" }}>...</span>
-        </div>
+        <div style={{ fontSize: 12, color: "#484f58" }}>reviewing pr...</div>
       )}
 
       {error && (
@@ -117,8 +118,8 @@ export default function PRReviewer({ initialUrl = "" }) {
       {result && (
         <div>
           <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #21262d" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: "bold", color: "#e6edf3", flex: 1, marginRight: 16 }}>{result.prDetails.title}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, gap: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: "bold", color: "#e6edf3", flex: 1, minWidth: 0 }}>{result.prDetails.title}</div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: "bold", color: verdictColor[result.review.verdict] || "#e6edf3" }}>
                   [{result.review.verdict}]
@@ -142,7 +143,7 @@ export default function PRReviewer({ initialUrl = "" }) {
             <div style={{ fontSize: 12, color: "#8b949e", lineHeight: 1.8 }}>{result.review.summary}</div>
           </Panel>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
             <div>
               <SectionTitle>issues found</SectionTitle>
               <Panel>
