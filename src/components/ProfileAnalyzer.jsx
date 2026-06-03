@@ -3,7 +3,6 @@ import { useState } from "react";
 import StatCard from "./StatCard";
 import LanguageBar from "./LanguageBar";
 import RepoDrawer from "./RepoDrawer";
-import { useIsMobile } from "@/hooks/useIsMobile";
 
 const SectionTitle = ({ children }) => (
   <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, paddingBottom: 4, borderBottom: "1px solid #21262d" }}>
@@ -24,7 +23,6 @@ export default function ProfileAnalyzer({ onPRClick }) {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
   const [selectedRepo, setSelectedRepo] = useState(null);
-  const isMobile = useIsMobile();
 
   const analyze = async () => {
     if (!username.trim()) return;
@@ -58,6 +56,16 @@ export default function ProfileAnalyzer({ onPRClick }) {
 
   return (
     <div>
+      <style>{`
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        @media (max-width: 768px) {
+          .main-grid { grid-template-columns: 1fr !important; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+      `}</style>
+
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 12, color: "#484f58", marginBottom: 8 }}>
           $ <span style={{ color: "#3fb950" }}>devtrack analyze</span>{" "}
@@ -99,12 +107,11 @@ export default function ProfileAnalyzer({ onPRClick }) {
 
       {data && profile && (
         <div>
-          {/* User header */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid #21262d", flexWrap: "wrap" }}>
             <img
               src={data.user.avatar_url}
               alt={data.user.login}
-              style={{ width: 56, height: 56, borderRadius: "50%", border: "2px solid #3fb950", filter: "grayscale(30%)" }}
+              style={{ width: 56, height: 56, borderRadius: "50%", border: "2px solid #3fb950", filter: "grayscale(30%)", flexShrink: 0 }}
             />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 16, fontWeight: "bold", color: "#e6edf3" }}>{data.user.name || data.user.login}</div>
@@ -118,16 +125,14 @@ export default function ProfileAnalyzer({ onPRClick }) {
             </div>
           </div>
 
-          {/* Stats grid - 2 col on mobile, 4 on desktop */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
+          <div className="stats-grid">
             <StatCard label="repositories" value={data.stats.totalRepos} />
             <StatCard label="total stars" value={data.stats.totalStars.toLocaleString()} color="blue" />
             <StatCard label="forks" value={data.stats.totalForks.toLocaleString()} color="yellow" />
             <StatCard label="active 30d" value={data.stats.recentlyActive} color="green" />
           </div>
 
-          {/* Main two col — stacks on mobile */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div className="main-grid">
             <div>
               <SectionTitle>languages</SectionTitle>
               <Panel>
@@ -174,7 +179,6 @@ export default function ProfileAnalyzer({ onPRClick }) {
             </div>
           </div>
 
-          {/* AI Profile */}
           <SectionTitle>ai profile</SectionTitle>
           <Panel>
             <div style={{ fontSize: 12, color: "#8b949e", lineHeight: 1.8, marginBottom: 12 }}>{profile.summary}</div>
@@ -195,7 +199,6 @@ export default function ProfileAnalyzer({ onPRClick }) {
             analysis complete · powered by groq llama-3.3
             <span style={{ display: "inline-block", width: 7, height: 12, background: "#3fb950", verticalAlign: "middle", marginLeft: 4, animation: "blink 1s step-end infinite" }} />
           </div>
-          <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
         </div>
       )}
     </div>

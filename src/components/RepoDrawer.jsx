@@ -1,6 +1,5 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
-import { useIsMobile } from "@/hooks/useIsMobile";
 
 const healthColor = { "Good": "#3fb950", "Fair": "#d29922", "Needs Attention": "#f78166" };
 
@@ -8,7 +7,6 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const isMobile = useIsMobile();
 
   const actualOwner = repo.full_name ? repo.full_name.split("/")[0] : owner;
 
@@ -25,6 +23,11 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
 
   return (
     <div style={{ marginTop: 12, background: "#0d1117", border: "1px solid #3fb950", borderRadius: 8, overflow: "hidden" }}>
+      <style>{`
+        .drawer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+        @media (max-width: 768px) { .drawer-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
+
       <div style={{ background: "#161b22", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #21262d", flexWrap: "wrap", gap: 8 }}>
         <span style={{ fontSize: 12, color: "#3fb950", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <span>// {repo.full_name || repo.name}</span>
@@ -40,8 +43,7 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
         {error && <div style={{ fontSize: 12, color: "#f78166" }}>error: {error}</div>}
 
         {data && (
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 14 }}>
-
+          <div className="drawer-grid">
             <div>
               <div style={{ fontSize: 10, color: "#3fb950", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>// what it does</div>
               <div style={{ fontSize: 11, color: "#8b949e", lineHeight: 1.7, marginBottom: 10 }}>{data.analysis.what}</div>
@@ -117,7 +119,6 @@ export default function RepoDrawer({ repo, owner, onClose, onPRClick }) {
           </div>
         )}
       </div>
-      <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
     </div>
   );
 }
